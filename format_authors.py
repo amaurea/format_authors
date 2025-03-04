@@ -12,7 +12,7 @@ def argsort_names(names):
 	return [i for name,i in inames]
 
 def initials(name):
-	return "".join([word[0] for word in name.split()])
+	return "".join([word[0] for word in name.replace("_"," ").split()])
 
 def comma_and(words):
 	if len(words) == 1: return words[0]
@@ -20,7 +20,7 @@ def comma_and(words):
 
 def format_author_tex(name, orcid):
 	orcstr = "[%s]" % orcid if orcid else ""
-	return "\\author%s{%s}" % (orcstr, name.replace(" ", "~"))
+	return "\\author%s{%s}" % (orcstr, name.replace("_"," ").replace(" ", "~"))
 
 def format_affil_tex(affil):
 	return "\\affiliation{%s}" % affil
