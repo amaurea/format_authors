@@ -22,6 +22,8 @@ def format_author_tex(name, orcid):
 	orcstr = "[%s]" % orcid if orcid else ""
 	return "\\author%s{%s}" % (orcstr, name.replace("_"," ").replace(" ", "~"))
 
+def format_author_arxiv(name, orcid): return name
+
 def format_affil_tex(affil):
 	return "\\affiliation{%s}" % affil
 
@@ -40,6 +42,20 @@ def build_authaffil(db, auth_levels):
 			full_tex = auth_tex + " " + " ".join(affil_tex)
 			lines.append(full_tex)
 	return lines
+
+def build_auth_arxiv(db, auth_levels):
+	authdb  = db["authors"]
+	lines = []
+	for level, authids in enumerate(auth_levels):
+		# Will sort each level alphabetically by last name
+		names = [authdb[authid][0] for authid in authids]
+		order = argsort_names(names)
+		for ind in order:
+			authinfo = authdb[authids[ind]]
+			auth_tex = format_author_arxiv(name=authinfo[0], orcid=authinfo[1])
+			lines.append(auth_tex)
+	# Should all be on a single line here
+	return [comma_and(lines)]
 
 def build_ackn(db, auth_levels):
 	authdb  = db["authors"]
@@ -87,6 +103,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("dbfile")
 	parser.add_argument("authlist")
+	parser.add_argument("what", choices=["auth", "ackn", "arxiv"])
 	args = parser.parse_args()
 	with open(args.dbfile, "r") as dbfile:
 		db = json.load(dbfile)
@@ -94,10 +111,13 @@ if __name__ == "__main__":
 	with open(args.authlist, "r") as aufile:
 		for line in aufile:
 			auth_levels.append([aid.strip() for aid in line.split(",")])
-	authors = build_authaffil(db, auth_levels)
-	print("\n".join(authors))
-	print()
-	ackns   = build_ackn     (db, auth_levels)
-	print("\n".join(ackns))
-
-
+	if args.what in ["auth", "authors"]:
+		authors = build_authaffil(db, auth_levels)
+		print("\n".join(authors))
+	elif args.what in ["ackn", "acknowledgements"]:
+		ackns   = build_ackn(db, auth_levels)
+		print("\n".join(ackns))
+	elif args.what in ["arxiv"]:
+		authors_arxiv = build_auth_arxiv(db, auth_levels)
+		print("\n".join(authors_arxiv))
+	else: raise ValueError("Unrecognized target '%s'" % str(args.what))
