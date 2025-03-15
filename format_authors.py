@@ -22,7 +22,7 @@ def format_author_tex(name, orcid):
 	orcstr = "[%s]" % orcid if orcid else ""
 	return "\\author%s{%s}" % (orcstr, name.replace("_"," ").replace(" ", "~"))
 
-def format_author_arxiv(name, orcid): return name
+def format_author_arxiv(name, orcid): return name.replace("_"," ")
 
 def format_affil_tex(affil):
 	return "\\affiliation{%s}" % affil
